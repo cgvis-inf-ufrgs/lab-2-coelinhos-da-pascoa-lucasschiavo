@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow *window;
-    window = glfwCreateWindow(800, 600, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "INF01047 - 00578225 - Lucas Slongo Schiavo", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -399,17 +399,70 @@ int main(int argc, char *argv[])
 #define BUNNY 1
 #define PLANE 2
 
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f, 0.0f, 0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
+#define BUNNY_COUNT 16
+
+        // // Desenhamos o modelo da esfera
+        // model = Matrix_Translate(-1.0f, 0.0f, 0.0f);
+        // glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        // glUniform1i(g_object_id_uniform, SPHERE);
+        // DrawVirtualObject("the_sphere");
 
         // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f, 0.0f, 0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        DrawVirtualObject("the_bunny");
+
+        const float scale = 0.4;
+        const float center_distance = 3.0;
+        const float ball_distance = 3;
+        const double time = glfwGetTime();
+        const float movement = time / 1.5;
+
+        for (int i = 0; i < BUNNY_COUNT; i++)
+        {
+            float angle = (float)i / (float)BUNNY_COUNT * 2.0 * M_PI;
+
+            float x = sin(angle + movement) * center_distance;
+            float z = cos(angle + movement) * center_distance;
+            // height
+            float y = sin((angle + movement) * 4) + 1;
+
+            float orientation = angle + movement + M_PI;
+
+            float z_rotation = 0;
+
+            if (i % 4 == 0)
+            {
+                z_rotation = (angle + movement) * 4;
+            }
+
+            // bunnies
+            model = Matrix_Translate(x, y, z)           // bunny position
+                    * Matrix_Scale(scale, scale, scale) // scale
+                    * Matrix_Rotate_Y(orientation)      // makes the bunny point to the direction of the circle
+                    * Matrix_Rotate_Z(z_rotation);      // makes some bunnies rotate on z
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, BUNNY);
+            DrawVirtualObject("the_bunny");
+
+            // ball 1
+            model = Matrix_Translate(x, y, z)                 // bunny position
+                    * Matrix_Scale(0.15, 0.25, 0.15)          // scale
+                    * Matrix_Rotate_Y(orientation)            // makes the ball point to the same direction as the bunny
+                    * Matrix_Rotate_X((angle + movement) * 4) // ball rotation
+                    * Matrix_Translate(0, ball_distance, 0);  // shifts the ball from the bunny
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, SPHERE);
+            DrawVirtualObject("the_sphere");
+
+            // ball 1
+            model = Matrix_Translate(x, y, z)                 // bunny position
+                    * Matrix_Scale(0.15, 0.25, 0.15)          // scale
+                    * Matrix_Rotate_Y(orientation)            // makes the ball point to the same direction as the bunny
+                    * Matrix_Rotate_X((angle + movement) * 4) // makes the ball rotate
+                    * Matrix_Translate(0, -ball_distance, 0); // shifts the ball from the bunny
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, SPHERE);
+            DrawVirtualObject("the_sphere");
+        }
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f, -1.0f, 0.0f) * Matrix_Scale(4.0f, 1.0f, 4.0f);
